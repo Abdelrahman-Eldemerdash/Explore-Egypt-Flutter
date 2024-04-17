@@ -26,7 +26,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   Future<LandmarkData?> _getLandmarkData(String landmarkName) async {
-    String apiUrl = Constants.baseUrl+"/api/Landmark/name/$landmarkName";
+    String apiUrl = Constants.baseUrl + "/api/Landmark/name/$landmarkName";
     var response = await http.get(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
@@ -167,7 +167,7 @@ class _HomeState extends State<Home> {
   }
 
   Future<String> _sendImageToPredictAPI(List<int> imageBytes) async {
-    final apiUrl = Constants.baseUrl+'/api/Landmark/predict';
+    final apiUrl = Constants.baseUrl + '/api/Landmark/predict';
 
     try {
       String base64Image = base64Encode(imageBytes);
@@ -207,6 +207,79 @@ class _HomeState extends State<Home> {
     _fetchLandmarks();
   }
 
+  void _showSearchWidget(BuildContext context) {
+    filteredList.clear(); // Clear the list every time before showing the dialog
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return AlertDialog(
+              title: Text('Search'),
+              content: Container(
+                width: double.maxFinite,
+                height: MediaQuery.of(context).size.height *
+                    0.5, // Adjust the height of the dialog content
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      onChanged: (value) {
+                        if (value.length >= 2) {
+                          _searchWithName(
+                              context, value); // Update suggestions list
+                          setState(() {}); // Update the dialog content
+                        } else {
+                          setState(() {
+                            filteredList
+                                .clear(); // Clear the list if less than 2 characters
+                          });
+                        }
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'Search',
+                        prefixIcon: Icon(Icons.search),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    if (filteredList.isNotEmpty)
+                      Expanded(
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: filteredList.length,
+                          itemBuilder: (context, index) {
+                            return ListTile(
+                              onTap: () {
+                                Navigator.pop(context); // Close the dialog
+                                _navigateToLandmarkPage(
+                                    filteredList[index].name);
+                                FocusScope.of(context)
+                                    .unfocus(); // Dismiss keyboard
+                              },
+                              title: Text(
+                                filteredList[index].name,
+                                style: TextStyle(fontSize: 15),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   final FocusNode _searchFocusNode = FocusNode();
   @override
   Widget build(BuildContext context) {
@@ -223,6 +296,7 @@ class _HomeState extends State<Home> {
           });
         },
         child: MaterialApp(
+          debugShowCheckedModeBanner: false,
           home: Scaffold(
             body: SingleChildScrollView(
               child: Padding(
@@ -259,18 +333,11 @@ class _HomeState extends State<Home> {
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 20),
                       child: TextField(
-                        focusNode: _searchFocusNode,
-                        onChanged: (value) {
-                          if (value.length >= 3) {
-                            _searchWithName(context, value);
-                          } else {
-                            setState(() {
-                              filteredList = [];
-                            });
-                          }
+                        onTap: () {
+                          _showSearchWidget(context);
                         },
                         decoration: InputDecoration(
-                          hintText: 'Search',
+                          hintText: 'Search By Name',
                           prefixIcon: Icon(Icons.search),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20.0),
@@ -281,27 +348,6 @@ class _HomeState extends State<Home> {
                       ),
                     ),
                     SizedBox(height: 15),
-                    if (filteredList.isNotEmpty)
-                      Container(
-                        color: Colors.grey[300],
-                        child: ListView.builder(
-                          padding: EdgeInsets.all(0),
-                          shrinkWrap: true,
-                          itemCount: filteredList.length,
-                          itemBuilder: (context, index) {
-                            return ListTile(
-                              onTap: () {
-                                _navigateToLandmarkPage(
-                                    filteredList[index].name);
-                              },
-                              title: Text(
-                                filteredList[index].name,
-                                style: TextStyle(fontSize: 15),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
                     Text(
                       "Do you have a photo ?",
                       style: TextStyle(
@@ -533,7 +579,7 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> _fetchLandmarks() async {
-    String apiUrl = Constants.baseUrl+"/api/Landmark";
+    String apiUrl = Constants.baseUrl + "/api/Landmark";
 
     try {
       var response = await http.get(Uri.parse(apiUrl));

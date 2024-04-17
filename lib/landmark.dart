@@ -35,6 +35,7 @@ class _LandmarkState extends State<Landmark> {
             ?.toList() ??
         [];
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         body: SingleChildScrollView(
           child: Column(

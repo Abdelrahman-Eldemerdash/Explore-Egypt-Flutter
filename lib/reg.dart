@@ -27,24 +27,45 @@ class _RegState extends State<Reg> {
   bool _isObscured = true;
   bool _isConfirmPasswordObscured = true;
   Future<void> registerUser(User user) async {
-    try {
-      
-      await http.post(
-        Uri.parse(Constants.baseUrl+'/api/user/register'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(user.toJson()),
-      );
+  try {
+    final response = await http.post(
+      Uri.parse(Constants.baseUrl+'/api/user/register'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(user.toJson()),
+    );
 
-      
-      Navigator.pushReplacement(
+    if (response.statusCode == 204) {
+      // Registration successful
+      Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => Login()),
       );
-    } catch (error) {
-      // Handle API call errors
-      print('API call failed: $error');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Account registered successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else {
+      // Registration failed
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to register.Email is already in use !'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
+  } catch (error) {
+    // Handle API call errors
+    print('API call failed: $error');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Failed to register. Please try again later.'),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -304,6 +325,7 @@ class _RegState extends State<Reg> {
                                 initialSelection: '+1',
                                 
                                 onChanged: (CountryCode? code) {
+                                  FocusScope.of(context).unfocus();
                                   selectedCountry = code?.name ?? '';
                                   print(selectedCountry);
                                 },
@@ -319,6 +341,7 @@ class _RegState extends State<Reg> {
                         children: [
                           ElevatedButton(
                             onPressed: () {
+                              FocusScope.of(context).unfocus();
                               if (_formKey.currentState?.validate() ?? false) {
                                 // Create a User object with the entered information
                                 User user = User(

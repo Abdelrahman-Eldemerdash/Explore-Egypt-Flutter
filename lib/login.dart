@@ -176,6 +176,7 @@ class _LoginState extends State<Login> {
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
                               // Add the functionality when the button is pressed
+                              FocusScope.of(context).unfocus();
                               login(emailController.text,
                                   passwordController.text);
                             }
@@ -239,8 +240,7 @@ class _LoginState extends State<Login> {
   }
 
   Future<void> login(String email, String password) async {
-    const String apiUrl =
-        Constants.baseUrl+'/api/User/login'; // Replace with your actual API URL 'http://10.0.2.2:5257/api/User/login'
+    const String apiUrl = Constants.baseUrl + '/api/User/login';
 
     try {
       final response = await http.post(
@@ -261,19 +261,28 @@ class _LoginState extends State<Login> {
         User user = User.fromJson(userData);
         Navigator.push(
           context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  Home(user:user)), // Replace LoginPage with your actual login page class
+          MaterialPageRoute(builder: (context) => Home(user: user)),
         );
-        // You might want to navigate to another screen here, or save the user data securely (e.g., using SharedPreferences or a secure storage package).
       } else {
-        // Handle different responses or show an error message
+        // Handle different responses or show a generic error message
         print('Failed to login. Status code: ${response.statusCode}');
-        // Consider using the response body or status code to display a more specific error message.
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Wrong email or password'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     } catch (e) {
       print('Caught error: $e');
       // Handle network errors, timeouts, etc.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content:
+              Text('Failed to login. Please check your internet connection.'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 }

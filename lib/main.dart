@@ -5,7 +5,6 @@ import 'login.dart';
 void main() {
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
-    title: 'Navigation Basics',
     home: Welcome(),
   ));
 }
@@ -69,6 +68,13 @@ class _HomeState extends State<Welcome> {
                         color: Colors.white,
                         fontFamily: 'Anton-Regular',
                         letterSpacing: 4,
+                        shadows: <Shadow>[
+                          Shadow(
+                            offset: Offset(1.0, 1.0),
+                            blurRadius: 25.0,
+                            color: Colors.black.withOpacity(1), // Adjust opacity as needed
+                          ),
+                        ],
                       ),
                     ),
                     Text(
@@ -78,6 +84,13 @@ class _HomeState extends State<Welcome> {
                         color: Colors.white,
                         fontFamily: 'Montserrat-VariableFont_wght',
                         letterSpacing: 1,
+                        shadows: <Shadow>[
+                          Shadow(
+                            offset: Offset(1.0, 1.0),
+                            blurRadius: 25.0,
+                            color: Colors.black.withOpacity(1), // Adjust opacity as needed
+                          ),
+                        ],
                       ),
                     ),
                     Expanded(
@@ -95,26 +108,49 @@ class _HomeState extends State<Welcome> {
                               color: Colors.white,
                               fontFamily: 'Montserrat-VariableFont_wght',
                               height: 1,
+                              shadows: <Shadow>[
+                                Shadow(
+                                  offset: Offset(1.0, 1.0),
+                                  blurRadius: 25.0,
+                                  color: Colors.black.withOpacity(1), // Adjust opacity as needed
+                                ),
+                              ],
                             ),
                             textAlign: TextAlign.center,
                           ),
                           Text(
                             'Luxurious',
                             style: TextStyle(
-                                fontSize: 40,
-                                color: Colors.white,
-                                height: 1,
-                                fontWeight: FontWeight.bold),
+                              fontSize: 40,
+                              color: Colors.white,
+                              height: 1,
+                              fontWeight: FontWeight.bold,
+                              shadows: <Shadow>[
+                                Shadow(
+                                  offset: Offset(1.0, 1.0),
+                                  blurRadius: 25.0,
+                                  color: Colors.black.withOpacity(1), // Adjust opacity as needed
+                                ),
+                              ],
+                            ),
                             textAlign: TextAlign.center,
                           ),
                           Text(
                             'Vacation',
                             style: TextStyle(
-                                fontSize: 40,
-                                color: Colors.white,
-                                fontFamily: 'Montserrat-Regular',
-                                fontWeight: FontWeight.bold,
-                                height: 1),
+                              fontSize: 40,
+                              color: Colors.white,
+                              fontFamily: 'Montserrat-Regular',
+                              fontWeight: FontWeight.bold,
+                              height: 1,
+                              shadows: <Shadow>[
+                                Shadow(
+                                  offset: Offset(1.0, 1.0),
+                                  blurRadius: 25.0,
+                                  color: Colors.black.withOpacity(1), // Adjust opacity as needed
+                                ),
+                              ],
+                            ),
                             textAlign: TextAlign.center,
                           ),
                         ],
@@ -127,8 +163,8 @@ class _HomeState extends State<Welcome> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) =>
-                                    Login()), // Replace LoginPage with your actual login page class
+                              builder: (context) => Login(),
+                            ),
                           );
                         },
                         style: ElevatedButton.styleFrom(
@@ -142,10 +178,18 @@ class _HomeState extends State<Welcome> {
                         child: Text(
                           'Explore',
                           style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white,
-                              fontStyle: FontStyle.italic,
-                              fontFamily: 'Montserrat-VariableFont_wght'),
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontStyle: FontStyle.italic,
+                            fontFamily: 'Montserrat-VariableFont_wght',
+                            shadows: <Shadow>[
+                              Shadow(
+                                offset: Offset(1.0, 1.0),
+                                blurRadius: 25.0,
+                                color: Colors.black.withOpacity(1), // Adjust opacity as needed
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -158,8 +202,7 @@ class _HomeState extends State<Welcome> {
             startImageTransition();
           },
         ),
-      
-    ),
+      ),
     );
   }
 }
