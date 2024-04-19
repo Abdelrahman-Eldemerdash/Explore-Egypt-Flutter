@@ -36,7 +36,7 @@ class _LoginState extends State<Login> {
                     Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
-                    primary: Colors.transparent,
+                    backgroundColor: Colors.transparent,
                     elevation: 0,
                   ),
                   child: Icon(Icons.arrow_back, color: Colors.black),
@@ -56,7 +56,7 @@ class _LoginState extends State<Login> {
           SizedBox(height: 20.0),
           Center(
             child: Text(
-              "Your Title Here",
+              "Login",
               style: TextStyle(fontSize: 22),
             ),
           ),
@@ -182,7 +182,7 @@ class _LoginState extends State<Login> {
                             }
                           },
                           style: ElevatedButton.styleFrom(
-                            primary: Colors.blue,
+                            backgroundColor: Colors.blue,
                             padding: EdgeInsets.symmetric(
                                 horizontal: 0, vertical: 10),
                             shape: RoundedRectangleBorder(

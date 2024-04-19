@@ -312,8 +312,8 @@ class _HomeState extends State<Home> {
                               Navigator.pop(context);
                             },
                             style: ElevatedButton.styleFrom(
-                              primary: Colors.transparent,
                               elevation: 0,
+                              backgroundColor: Colors.transparent,
                             ),
                             child: Icon(Icons.arrow_back, color: Colors.black),
                           ),
@@ -333,6 +333,7 @@ class _HomeState extends State<Home> {
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 20),
                       child: TextField(
+                        readOnly: true,
                         onTap: () {
                           _showSearchWidget(context);
                         },
@@ -387,7 +388,7 @@ class _HomeState extends State<Home> {
                             _search(context);
                           },
                           style: ElevatedButton.styleFrom(
-                            primary: Color(0xFF176FF2),
+                            backgroundColor: Color(0xFF176FF2),
                           ),
                           child: Text("Search"),
                         ),

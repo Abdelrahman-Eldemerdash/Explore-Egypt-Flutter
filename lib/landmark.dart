@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'Landmark_Data.dart';
@@ -8,7 +6,7 @@ import 'package:intl/intl.dart';
 import 'constants.dart';
 
 class Landmark extends StatefulWidget {
-  final LandmarkData landmarkData; 
+  final LandmarkData landmarkData;
 
   Landmark({required this.landmarkData});
 
@@ -18,7 +16,7 @@ class Landmark extends StatefulWidget {
 
 class _LandmarkState extends State<Landmark> {
   int currentIndex = 0;
-  bool isFavorite = false; 
+  bool isFavorite = false;
   bool showFullDescription = false;
   @override
   Widget build(BuildContext context) {
@@ -31,7 +29,7 @@ class _LandmarkState extends State<Landmark> {
     String openTime = _formatTime(widget.landmarkData.openTime);
     String closeTime = _formatTime(widget.landmarkData.closeTime);
     List<String> landmarkImages = widget.landmarkData.images
-            ?.map((url) => Constants.baseUrl+'/$url')
+            ?.map((url) => Constants.baseUrl + '/$url')
             ?.toList() ??
         [];
     return MaterialApp(
@@ -250,8 +248,7 @@ class _LandmarkState extends State<Landmark> {
                         label: Text('Show on Maps',
                             style: TextStyle(fontSize: 16)),
                         style: ElevatedButton.styleFrom(
-                          primary: Color(0xFF176FF2),
-                          onPrimary: Colors.white,
+                          backgroundColor: Color(0xFF176FF2),
                           padding: EdgeInsets.symmetric(
                               vertical: 12, horizontal: 24),
                         ),
@@ -267,7 +264,6 @@ class _LandmarkState extends State<Landmark> {
     );
   }
 
-  
   void _launchMapsUrl(double lat, double lng) async {
     String googleUrl =
         'https://www.google.com/maps/search/?api=1&query=$lat,$lng';

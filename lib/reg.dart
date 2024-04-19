@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'login.dart';
 import 'constants.dart';
+
 class Reg extends StatefulWidget {
   Reg({Key? key}) : super(key: key);
 
@@ -27,45 +28,45 @@ class _RegState extends State<Reg> {
   bool _isObscured = true;
   bool _isConfirmPasswordObscured = true;
   Future<void> registerUser(User user) async {
-  try {
-    final response = await http.post(
-      Uri.parse(Constants.baseUrl+'/api/user/register'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(user.toJson()),
-    );
+    try {
+      final response = await http.post(
+        Uri.parse(Constants.baseUrl + '/api/user/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(user.toJson()),
+      );
 
-    if (response.statusCode == 204) {
-      // Registration successful
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => Login()),
-      );
+      if (response.statusCode == 204) {
+        // Registration successful
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Login()),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Account registered successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        // Registration failed
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to register.Email is already in use !'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (error) {
+      // Handle API call errors
+      print('API call failed: $error');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Account registered successfully!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } else {
-      // Registration failed
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to register.Email is already in use !'),
+          content: Text('Failed to register. Please try again later.'),
           backgroundColor: Colors.red,
         ),
       );
     }
-  } catch (error) {
-    // Handle API call errors
-    print('API call failed: $error');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Failed to register. Please try again later.'),
-        backgroundColor: Colors.red,
-      ),
-    );
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +90,7 @@ class _RegState extends State<Reg> {
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
-                        primary: Colors.transparent,
+                        backgroundColor: Colors.transparent,
                         elevation: 0,
                       ),
                       child: Icon(Icons.arrow_back, color: Colors.black),
@@ -109,7 +110,7 @@ class _RegState extends State<Reg> {
               SizedBox(height: 20.0),
               Center(
                 child: Text(
-                  "Your Title Here",
+                  "Register",
                   style: TextStyle(fontSize: 22),
                 ),
               ),
@@ -323,14 +324,11 @@ class _RegState extends State<Reg> {
                                   showEnglishName: true,
                                 ),
                                 initialSelection: '+1',
-                                
                                 onChanged: (CountryCode? code) {
-                                  FocusScope.of(context).unfocus();
                                   selectedCountry = code?.name ?? '';
                                   print(selectedCountry);
                                 },
                                 useUiOverlay: false,
-                                
                                 useSafeArea: true),
                           ),
                         ],
@@ -359,7 +357,7 @@ class _RegState extends State<Reg> {
                               }
                             },
                             style: ElevatedButton.styleFrom(
-                              primary: Colors.blue,
+                              backgroundColor: Colors.blue,
                               padding: EdgeInsets.symmetric(
                                   horizontal: 0, vertical: 10),
                               shape: RoundedRectangleBorder(
