@@ -1,6 +1,10 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/history.dart';
+import 'package:geolocator/geolocator.dart';
+import 'NearestLandmarksPage.dart';
 import 'all.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
@@ -9,6 +13,9 @@ import 'landmark.dart';
 import 'Landmark_Data.dart';
 import 'User.dart';
 import 'profile.dart';
+import 'user_data.dart';
+import 'favourites.dart';
+
 // void main() {
 //   runApp(MaterialApp(
 //     title: 'Navigation Basics',
@@ -16,9 +23,7 @@ import 'profile.dart';
 //   ));
 
 class Home extends StatefulWidget {
-  final User user;
-
-  const Home({Key? key, required this.user}) : super(key: key);
+  const Home({Key? key}) : super(key: key);
 
   @override
   _HomeState createState() => _HomeState();
@@ -99,7 +104,7 @@ class _HomeState extends State<Home> {
     }
 
     LandmarkData? landmarkData = await _getLandmarkData(predictionResult);
-
+    _addToHistory(landmarkData!.id);
     if (landmarkData != null) {
       print("LandmarkData: $landmarkData");
 
@@ -329,7 +334,7 @@ class _HomeState extends State<Home> {
                         ],
                       ),
                     ),
-                    SizedBox(height: 15),
+                    SizedBox(height: 10),
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 20),
                       child: TextField(
@@ -348,7 +353,7 @@ class _HomeState extends State<Home> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 15),
+                    SizedBox(height: 10),
                     Text(
                       "Do you have a photo ?",
                       style: TextStyle(
@@ -394,7 +399,7 @@ class _HomeState extends State<Home> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 45),
+                    SizedBox(height: 15),
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 20),
                       child: Row(
@@ -430,9 +435,17 @@ class _HomeState extends State<Home> {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         GestureDetector(
-                          onTap: () {
+                          onTap: () async {
                             if (landmarkList.isNotEmpty) {
-                              _navigateToLandmarkPage(landmarkList[0].name);
+                              LandmarkData? landmarkDataa =
+                                  await _getLandmarkData(landmarkList[0].name);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      Landmark(landmarkData: landmarkDataa!),
+                                ),
+                              );
                             }
                           },
                           child: _buildClickableFrame(
@@ -441,9 +454,17 @@ class _HomeState extends State<Home> {
                           ),
                         ),
                         GestureDetector(
-                          onTap: () {
+                          onTap: () async {
                             if (landmarkList.length > 1) {
-                              _navigateToLandmarkPage(landmarkList[1].name);
+                              LandmarkData? landmarkDataa =
+                                  await _getLandmarkData(landmarkList[1].name);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      Landmark(landmarkData: landmarkDataa!),
+                                ),
+                              );
                             }
                           },
                           child: _buildClickableFrame(
@@ -452,7 +473,44 @@ class _HomeState extends State<Home> {
                           ),
                         ),
                       ],
-                    )
+                    ),
+                    SizedBox(height: 10),
+                    Container(
+                      width: 300,
+                      height: 40,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(30.0),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            _getCurrentLocation(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            primary:
+                                Color(0xFF176FF2), // Background color of button
+                            onPrimary: Colors.white, // Text color of button
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.near_me,
+                                color: Colors.white, // Color of the map icon
+                              ),
+                              SizedBox(
+                                  width:
+                                      10), // Adjust the spacing between icon and text
+                              Text(
+                                "Landmarks near you",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -502,16 +560,23 @@ class _HomeState extends State<Home> {
       case 0:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => Home(user: widget.user)),
+          MaterialPageRoute(builder: (context) => Home()),
         );
         break;
+      case 1:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => History()),
+        );
+      case 2:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => FavouritesPage()),
+        );
       case 3:
         Navigator.push(
           context,
-          MaterialPageRoute(
-              builder: (context) => Profile(
-                    user: widget.user,
-                  )),
+          MaterialPageRoute(builder: (context) => Profile()),
         );
         break;
     }
@@ -564,7 +629,7 @@ class _HomeState extends State<Home> {
 
   void _navigateToLandmarkPage(String landmarkName) async {
     LandmarkData? landmarkData = await _getLandmarkData(landmarkName);
-
+    _addToHistory(landmarkData!.id);
     if (landmarkData != null) {
       print("LandmarkData: $landmarkData");
 
@@ -576,6 +641,24 @@ class _HomeState extends State<Home> {
       );
     } else {
       print("LandmarkData is null");
+    }
+  }
+
+  Future<void> _addToHistory(int landmarkId) async {
+    final url = Uri.parse(Constants.baseUrl +
+        "/api/Landmark/add-history/${currentUser?.id}/${landmarkId}");
+    final headers = {'Content-Type': 'application/json'};
+    print({currentUser?.id});
+
+    try {
+      final response = await http.post(url, headers: headers);
+      if (response.statusCode == 200) {
+        print('Search history added successfully');
+      } else {
+        print('Failed to add search history: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error adding search history: $e');
     }
   }
 
@@ -631,4 +714,53 @@ class _HomeState extends State<Home> {
       print("Exception: $error");
     }
   }
+void _getCurrentLocation(BuildContext context) async {
+bool serviceEnabled;
+LocationPermission permission;
+// Check if location services are enabled
+serviceEnabled = await Geolocator.isLocationServiceEnabled();
+if (!serviceEnabled) {
+  print('Location services are disabled');
+  return;
 }
+
+// Request location permission
+permission = await Geolocator.checkPermission();
+if (permission == LocationPermission.deniedForever) {
+  print('Location permissions are permanently denied, we cannot request permissions.');
+  return;
+}
+
+if (permission == LocationPermission.denied) {
+  permission = await Geolocator.requestPermission();
+  if (permission != LocationPermission.whileInUse && permission != LocationPermission.always) {
+    print('Location permissions are denied (actual value: $permission).');
+    return;
+  }
+}
+
+// Get current location
+try {
+  Position position = await Geolocator.getCurrentPosition(
+  forceAndroidLocationManager: true,
+  desiredAccuracy: LocationAccuracy.best
+).timeout(Duration(seconds: 20));
+  print(position.latitude);
+  print(position.longitude);
+  // Navigate to nearest landmarks page with current location coordinates
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => NearestLandmarksPage(
+        latitude: position.latitude,
+        longitude: position.longitude,
+      ),
+    ),
+  );
+} catch (e) {
+  print('Error getting current location: $e');
+}
+}
+}
+
+

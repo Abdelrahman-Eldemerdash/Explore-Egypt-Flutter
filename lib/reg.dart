@@ -357,7 +357,7 @@ class _RegState extends State<Reg> {
                               }
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
+                              backgroundColor:  Color(0xFF176FF2),
                               padding: EdgeInsets.symmetric(
                                   horizontal: 0, vertical: 10),
                               shape: RoundedRectangleBorder(

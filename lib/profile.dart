@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/login.dart';
+import 'favourites.dart';
+import 'history.dart';
 import 'home.dart';
 import 'User.dart';
+import 'user_data.dart'; // Import the global variable
 
 class Profile extends StatefulWidget {
-  final User user; // Add a field to store the user object
-
-  const Profile({Key? key, required this.user}) : super(key: key);
+  Profile({Key? key}) : super(key: key);
 
   @override
   State<Profile> createState() => _ProfileState();
 }
 
 class _ProfileState extends State<Profile> {
-  int _currentIndex = 3;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ProfilePage(user:widget.user),
+      body: SafeArea(
+        child: ProfilePage(user: currentUser!), // Use currentUser
+      ),
       bottomNavigationBar: _buildBottomNavigationBar(context),
     );
   }
@@ -60,14 +62,26 @@ class _ProfileState extends State<Profile> {
   void _onBottomNavigationBarItemTapped(BuildContext context, int index) {
     switch (index) {
       case 0:
-        // Navigate to the Home page
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => Home(user: widget.user)),
+          MaterialPageRoute(builder: (context) => Home()),
         );
         break;
-
-      // Repeat the process for other tabs as needed
+      case 1:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => History()),
+        );
+        break;
+      case 2:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => FavouritesPage()),
+        );
+        break;
+      case 3:
+        // Stay on the Profile page
+        break;
     }
   }
 }
@@ -80,57 +94,95 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Align(
-        alignment: Alignment.topCenter,
-        child: Padding(
-          padding: EdgeInsets.only(top: 40),
-          child: Column(
-            children: [
-              Image.asset(
-                'assets/logo.png',
-                width: 120,
-                height: 120,
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(height: 40),
+            Image.asset(
+              'assets/logo.png',
+              width: 80,
+              height: 80,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Profile',
+              style: TextStyle(
+                fontSize: 25,
+                fontWeight: FontWeight.bold,
               ),
-              SizedBox(height: 16),
-              Text(
-                'Profile',
+            ),
+            SizedBox(height: 16),
+            // Profile details with icons
+            buildProfileDetail(Icons.person, 'First Name', user.firstName),
+            buildProfileDetail(Icons.person, 'Last Name', user.lastName),
+            buildProfileDetail(Icons.email, 'Email', user.email),
+            buildProfileDetail(Icons.lock, 'Password', '*********'), // Display password securely
+            buildProfileDetail(Icons.location_on, 'Country', user.country),
+            SizedBox(height: 20),
+            // Logout button
+            ElevatedButton(
+              onPressed: () {
+                // Perform logout logic here
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => Login()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                primary: Color(0xFF176FF2), // Set button color
+                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+              ),
+              child: Text(
+                'Logout',
                 style: TextStyle(
-                  fontSize: 34, // Adjust the font size as needed
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
               ),
-              // Text fields for user data
-              buildText('First Name', user.firstName),
-              buildText('Last Name', user.lastName),
-              buildText('Email', user.email),
-              buildText('Password', user.password), 
-              buildText('Country', user.country),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget buildText(String labelText, String value) {
+  Widget buildProfileDetail(IconData iconData, String labelText, String value) {
     return Padding(
-      padding: EdgeInsets.symmetric(
-          vertical: 24, horizontal: 16), // Adjust vertical padding as needed
+      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            labelText + ': ',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 24, // Adjust the font size as needed
-            ),
+          Icon(
+            iconData,
+            size: 32,
+            color: Color(0xFF176FF2),
           ),
-          SizedBox(width: 8), // Adjust width as needed
-          Text(
-            value,
-            style: TextStyle(
-              color: Colors.grey[700],
-              fontSize: 24, // Adjust the font size as needed
+          SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  labelText,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[700],
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
           ),
         ],
@@ -138,31 +190,3 @@ class ProfilePage extends StatelessWidget {
     );
   }
 }
-
-
-  Widget buildText(String labelText, String value) {
-    return Padding(
-      padding: EdgeInsets.symmetric(
-          vertical: 24, horizontal: 16), // Adjust vertical padding as needed
-      child: Row(
-        children: [
-          Text(
-            labelText + ': ',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 24, // Adjust the font size as needed
-            ),
-          ),
-          SizedBox(width: 8), // Adjust width as needed
-          Text(
-            value,
-            style: TextStyle(
-              color: Colors.grey[700],
-              fontSize: 24, // Adjust the font size as needed
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-

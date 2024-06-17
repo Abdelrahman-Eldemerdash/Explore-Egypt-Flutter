@@ -1,206 +1,214 @@
-// import 'package:flutter/material.dart';
-// import 'favourites.dart';
-// import 'package:test_app/pages/history.dart';
-// import 'package:test_app/pages/profile.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_application_1/profile.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
+import 'Landmark_Data.dart';
+import 'constants.dart';
+import 'favourites.dart';
+import 'home.dart';
+import 'landmark.dart';
+import 'user_data.dart'; // Assuming currentUser is defined here
 
+class History extends StatefulWidget {
+  const History({Key? key}) : super(key: key);
 
-// class Landmark {
-//   final String name;
-//   final String imagePath;
+  @override
+  _HistoryState createState() => _HistoryState();
+}
 
-//   Landmark({required this.name, required this.imagePath});
-// }
+class _HistoryState extends State<History> {
+  List<LandmarkData> historyLandmarks = [];
+  bool isLoading = true;
 
-// class ALL extends StatefulWidget {
-//   const ALL({super.key});
+  @override
+  void initState() {
+    super.initState();
+    _fetchHistoryLandmarks();
+  }
 
-//   @override
-//   _ALLState createState() => _ALLState();
-// }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('History'),
+        centerTitle: true,
+        backgroundColor: Color(0xFF176FF2), // Set app bar color
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator()) // Show loading indicator
+          : _buildHistoryListView(),
+      bottomNavigationBar: _buildBottomNavigationBar(context),   
+    );
+    
+  }
 
-// class _HomeState extends State<ALL> {
-//   List<Landmark> landmarks = [
-//     Landmark(name: 'Eiffel Tower', imagePath: 'assets/eiffel-tower.jpeg'),
-//     Landmark(name: 'Pyramids', imagePath: 'assets/pyramids.jpeg'),
-//     // Add more landmarks as needed
-//   ];
+  Widget _buildHistoryListView() {
+    return ListView.builder(
+      itemCount: historyLandmarks.length,
+      itemBuilder: (context, index) {
+        LandmarkData landmarkData = historyLandmarks[index];
+        return GestureDetector(
+          onTap: () {
+            _navigateToLandmarkDetailsPage(landmarkData);
+          },
+          child: Card(
+            elevation: 4,
+            margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Center(
+                child: Text(
+                  landmarkData.name,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
-//   List<Landmark> favorites = [];
-//   int _currentIndex = 0;
+  void _navigateToLandmarkDetailsPage(LandmarkData landmarkData) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Landmark(landmarkData: landmarkData),
+        
+      ),
+      
+    );
+  }
 
-//   void _handleFavoritePress(Landmark landmark) {
-//     setState(() {
-//       if (favorites.contains(landmark)) {
-//         favorites.remove(landmark);
-//       } else {
-//         favorites.add(landmark);
-//       }
-//     });
-//   }
+  Future<void> _fetchHistoryLandmarks() async {
+    setState(() {
+      isLoading = true; // Set loading state
+    });
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('My App'),
-//       ),
-//       body: _buildBody(),
-//       bottomNavigationBar: _buildBottomNavigationBar(),
-//     );
-//   }
+    String apiUrl = Constants.baseUrl + "/api/Landmark/getHistory/${currentUser?.id}"; // Replace with your API endpoint for fetching history
 
-  
+    try {
+      var response = await http.get(Uri.parse(apiUrl));
 
-//   Widget _buildBottomNavigationBar() {
-//     return ClipRRect(
-//       borderRadius: BorderRadius.only(
-//         topLeft: Radius.circular(20.0),
-//         topRight: Radius.circular(20.0),
-//       ),
-//       child: BottomNavigationBar(
-//         selectedItemColor: Color(0xFF176FF2),
-//         unselectedItemColor: Colors.grey[300],
-//         currentIndex: _currentIndex,
-//         onTap: (index) {
-//           _handleTabPress(context, index);
-//         },
-//         items: [
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.home),
-//             label: 'Home',
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.history),
-//             label: 'History',
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.favorite),
-//             label: 'Favorite',
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.person),
-//             label: 'Profile',
-//           ),
-//         ],
-//       ),
-//     );
-//   }
+      if (response.statusCode == 200) {
+        Map<String, dynamic> responseData = json.decode(response.body);
 
-//   void _handleTabPress(BuildContext context, int index) {
-//     setState(() {
-//       _currentIndex = index;
-//     });
+        if (responseData.containsKey('data') && responseData['data'] is List) {
+          List<dynamic> landmarkDataList = responseData['data'];
 
-//     switch (index) {
-//       case 0:
-//         Navigator.pushReplacementNamed(context, '/home');
-//         break;
-//       case 1:
-//         Navigator.pushReplacementNamed(context, '/history');
-//         break;
-//       case 2:
-//         Navigator.push(
-//           context,
-//           MaterialPageRoute(
-//             builder: (context) => Favourites(favoriteLandmarks: favorites),
-//           ),
-//         );
-//         break;
-//       case 3:
-//         Navigator.pushReplacementNamed(context, '/profile');
-//         break;
-//     }
-//   }
-// }
+          List<LandmarkData> fetchedLandmarks = landmarkDataList.map((data) {
+            return LandmarkData(
+              id: data['id'],
+              name: data['name'],
+              egyptianTicketPrice: data['egyptianTicketPrice'],
+              egyptianStudentTicketPrice: data['egyptianStudentTicketPrice'],
+              foreignTicketPrice: data['foreignTicketPrice'],
+              foreignStudentTicketPrice: data['foreignStudentTicketPrice'],
+              description: data['description'],
+              openTime: data['openTime'],
+              closeTime: data['closeTime'],
+              longitude: data['longitude'],
+              latitude: data['latitude'],
+              images: [], // You can handle images as needed
+            );
+          }).toList();
 
+          setState(() {
+            historyLandmarks = fetchedLandmarks;
+            isLoading = false; // Set loading state to false after fetching data
+          });
+        } else {
+          print("Invalid data structure in API response.");
+          setState(() {
+            isLoading = false; // Set loading state to false on error
+          });
+        }
+      } else {
+        print("Error: ${response.statusCode}");
+        setState(() {
+          isLoading = false; // Set loading state to false on error
+        });
+      }
+    } catch (error) {
+      print("Exception: $error");
+      setState(() {
+        isLoading = false; // Set loading state to false on exception
+      });
+    }
+  }
+  Widget _buildBottomNavigationBar(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.only(
+        topLeft: Radius.circular(20.0),
+        topRight: Radius.circular(20.0),
+      ),
+      child: BottomNavigationBar(
+        selectedItemColor: Color(0xFF176FF2),
+        unselectedItemColor: Colors.grey[300],
+        currentIndex: 1,
+        onTap: (index) {
+          _onBottomNavigationBarItemTapped(context, index);
+        },
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'History',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: 'Favorite',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ),
+    );
+  }
 
-// class HomeContent extends StatelessWidget {
-//   final List<Landmark> landmarks;
-//   final List<Landmark> favorites;
-//   final Function(Landmark) onFavoritePress;
-
-//   HomeContent({
-//     required this.landmarks,
-//     required this.favorites,
-//     required this.onFavoritePress,
-//   });
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Center(
-//       child: _buildLandmarkListView(),
-//     );
-//   }
-
-//   Widget _buildLandmarkListView() {
-//     return ListView.builder(
-//       itemCount: landmarks.length,
-//       itemBuilder: (context, index) {
-//         Landmark landmark = landmarks[index];
-//         bool isFavorite = favorites.contains(landmark);
-
-//         return Center(
-//           child: Container(
-//             width: 400,
-//             child: Column(
-//               children: [
-//                 ClipRRect(
-//                   borderRadius: BorderRadius.circular(12.0),
-//                   child: Stack(
-//                     alignment: Alignment.bottomLeft,
-//                     children: [
-//                       Image.asset(
-//                         landmark.imagePath,
-//                         width: 400,
-//                         height: 300,
-//                         fit: BoxFit.cover,
-//                       ),
-//                       Container(
-//                         padding: EdgeInsets.all(8),
-//                         color: Colors.black.withOpacity(0.7),
-//                         child: Row(
-//                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                           children: [
-//                             Text(
-//                               landmark.name,
-//                               style: TextStyle(
-//                                 color: Colors.white,
-//                                 fontSize: 14,
-//                                 fontWeight: FontWeight.bold,
-//                               ),
-//                             ),
-//                             // IconButton(
-//                             //   icon: Icon(
-//                             //     isFavorite ? Icons.favorite : Icons.favorite_border,
-//                             //     color: Colors.white,
-//                             //   ),
-//                             //   onPressed: () {
-//                             //     onFavoritePress(landmark);
-//                             //   },
-//                             // ),
-//                           ],
-//                         ),
-//                       ),
-//                     ],
-//                   ),
-//                 ),
-//                 SizedBox(height: 16),
-//               ],
-//             ),
-//           ),
-//         );
-//       },
-//     );
-//   }
-// }
-
-// class HistoryPage extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Center(
-//       child: Text('History Page'),
-//     );
-//   }
-// }
-
+  void _onBottomNavigationBarItemTapped(BuildContext context, int index) {
+    switch (index) {
+      case 0:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Home()),
+        );
+        break;
+      case 1:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => History()),
+        );
+      case 2:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => FavouritesPage()),
+        );
+      case 3:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Profile()),
+        );
+        break;
+    }
+  }
+}

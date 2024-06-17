@@ -39,4 +39,5 @@ class User {
       'id': id,
     };
   }
+
 }

@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'Landmark_Data.dart';
 import 'package:intl/intl.dart';
-
+import 'user_data.dart';
 import 'constants.dart';
+import 'package:http/http.dart' as http;
 
 class Landmark extends StatefulWidget {
   final LandmarkData landmarkData;
@@ -18,10 +19,18 @@ class _LandmarkState extends State<Landmark> {
   int currentIndex = 0;
   bool isFavorite = false;
   bool showFullDescription = false;
+
+  @override
+  void initState() {
+    _checkFavoriteStatus();
+    super.initState();
+     // Initialize favorite status
+  }
+
   @override
   Widget build(BuildContext context) {
     String landmarkDescription = widget.landmarkData.description;
-    String LandmarkName = widget.landmarkData.name;
+    String landmarkName = widget.landmarkData.name;
     double latitude = widget.landmarkData.latitude;
     double longitude = widget.landmarkData.longitude;
     double studentPrice = widget.landmarkData.foreignStudentTicketPrice;
@@ -32,6 +41,7 @@ class _LandmarkState extends State<Landmark> {
             ?.map((url) => Constants.baseUrl + '/$url')
             ?.toList() ??
         [];
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
@@ -62,15 +72,12 @@ class _LandmarkState extends State<Landmark> {
                       right: 10,
                       child: GestureDetector(
                         onTap: () {
-                          setState(() {
-                            isFavorite = !isFavorite;
-                          });
+                          _toggleFavoriteStatus();
                         },
                         child: Container(
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors
-                                .white, // You can change the background color here
+                            color: Colors.white,
                           ),
                           padding: EdgeInsets.all(8),
                           child: Icon(
@@ -137,7 +144,7 @@ class _LandmarkState extends State<Landmark> {
                       children: [
                         Expanded(
                           child: Text(
-                            LandmarkName,
+                            landmarkName,
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 22,
@@ -164,7 +171,7 @@ class _LandmarkState extends State<Landmark> {
                         children: [
                           Expanded(
                             child: Text(
-                              landmarkDescription.trim(), // Trim whitespace
+                              landmarkDescription.trim(),
                               overflow: TextOverflow.clip,
                               maxLines: showFullDescription ? null : 4,
                             ),
@@ -208,13 +215,12 @@ class _LandmarkState extends State<Landmark> {
                               ),
                             ),
                             Text(
-                              studentPrice == 0
-                                  ? 'No Fees'
-                                  : 'EGP $studentPrice',
+                              studentPrice == 0 ? 'No Fees' : 'EGP $studentPrice',
                               style: TextStyle(
-                                  fontSize: 18,
-                                  color: Color(0xFF2DD7A4),
-                                  fontWeight: FontWeight.bold),
+                                fontSize: 18,
+                                color: Color(0xFF2DD7A4),
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
@@ -230,9 +236,10 @@ class _LandmarkState extends State<Landmark> {
                             Text(
                               adultPrice == 0 ? 'No Fees' : 'EGP $adultPrice',
                               style: TextStyle(
-                                  fontSize: 18,
-                                  color: Color(0xFF2DD7A4),
-                                  fontWeight: FontWeight.bold),
+                                fontSize: 18,
+                                color: Color(0xFF2DD7A4),
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
@@ -264,19 +271,62 @@ class _LandmarkState extends State<Landmark> {
     );
   }
 
-  void _launchMapsUrl(double lat, double lng) async {
-    String googleUrl =
-        'https://www.google.com/maps/search/?api=1&query=$lat,$lng';
-    if (await canLaunch(googleUrl) != null) {
-      await launch(googleUrl);
-    } else {
-      throw 'Could not open the map.';
+  // Method to check if the landmark is a favorite
+  Future<void> _checkFavoriteStatus() async {
+    final url = Uri.parse(Constants.baseUrl + '/api/landmark/isFavourite/${currentUser?.id}/${widget.landmarkData.id}'); 
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        setState(() {
+          isFavorite = true;
+        });
+      } else if (response.statusCode == 404) {
+        setState(() {
+          isFavorite = false;
+        });
+      } else {
+        print('Failed to check favorite status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error checking favorite status: $e');
     }
   }
-}
 
-String _formatTime(String time) {
-  final parsedTime = DateFormat('HH:mm:ss').parse(time);
-  final formattedTime = DateFormat.jm().format(parsedTime);
-  return formattedTime;
+  // Method to toggle favorite status
+  Future<void> _toggleFavoriteStatus() async {
+    final url = Uri.parse(Constants.baseUrl + '/api/Landmark/toggleFavourite/${currentUser?.id}/${widget.landmarkData.id}');
+    final headers = {'Content-Type': 'application/json'};
+    try {
+      final response = await http.post(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        // Assuming the response contains a message indicating the current status
+        setState(() {
+          isFavorite = !isFavorite;
+        });
+      } else {
+        print('Failed to toggle favorite status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error toggling favorite status: $e');
+    }
+  }
+
+  // Method to format time
+  String _formatTime(String time) {
+    final parsedTime = DateFormat('HH:mm:ss').parse(time);
+    final formattedTime = DateFormat.jm().format(parsedTime);
+    return formattedTime;
+  }
+
+  // Method to launch Google Maps
+  void _launchMapsUrl(double latitude, double longitude) async {
+    final url = 'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
 }

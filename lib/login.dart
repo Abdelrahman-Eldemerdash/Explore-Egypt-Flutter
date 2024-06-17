@@ -6,6 +6,7 @@ import 'reg.dart';
 import 'User.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'user_data.dart';
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -19,6 +20,7 @@ class _LoginState extends State<Login> {
   final TextEditingController passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _isObscured = true;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -182,7 +184,7 @@ class _LoginState extends State<Login> {
                             }
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
+                            backgroundColor: Color(0xFF176FF2), // Change button color here
                             padding: EdgeInsets.symmetric(
                                 horizontal: 0, vertical: 10),
                             shape: RoundedRectangleBorder(
@@ -211,7 +213,7 @@ class _LoginState extends State<Login> {
                           TextSpan(
                             text: "Register",
                             style: TextStyle(
-                              color: Colors.blue,
+                              color: Color(0xFF176FF2), // Change register text color here
                               fontSize: 14,
                               decoration: TextDecoration.underline,
                               fontWeight: FontWeight.bold,
@@ -259,9 +261,10 @@ class _LoginState extends State<Login> {
         var userData = json.decode(response.body);
         print('Login successful: $userData');
         User user = User.fromJson(userData);
+        currentUser = user;
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => Home(user: user)),
+          MaterialPageRoute(builder: (context) => Home()),
         );
       } else {
         // Handle different responses or show a generic error message

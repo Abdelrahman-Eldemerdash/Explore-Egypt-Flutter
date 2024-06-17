@@ -1,57 +1,52 @@
-import 'package:flutter/material.dart';
 import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'constants.dart';
 import 'landmark.dart';
-import 'package:http/http.dart' as http;
 import 'Landmark_Data.dart';
 
-class AllLandmarks extends StatefulWidget {
-  const AllLandmarks({
-    Key? key,
-  }) : super(key: key);
+class NearestLandmarksPage extends StatefulWidget {
+  final double latitude;
+  final double longitude;
+
+  NearestLandmarksPage({required this.latitude, required this.longitude});
 
   @override
-  _AllLandmarksState createState() => _AllLandmarksState();
+  _NearestLandmarksPageState createState() => _NearestLandmarksPageState();
 }
 
-class _AllLandmarksState extends State<AllLandmarks> {
-  List<LandmarkData> landmarkList = [];
+class _NearestLandmarksPageState extends State<NearestLandmarksPage> {
+  List<LandmarkData> nearestLandmarks = [];
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchLandmarks();
+    fetchNearestLandmarks();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('All Landmarks'),
-        centerTitle: true,
+        title: Text('Nearest Landmarks'),
         backgroundColor: Color(0xFF176FF2), // Set app bar color
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator()) // Show loading indicator
-          : Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: _buildLandmarkListView(),
-            ),
+          ? Center(child: CircularProgressIndicator())
+          : nearestLandmarks.isNotEmpty
+              ? _buildLandmarkListView()
+              : Center(
+                  child: Text('No landmarks found within 50 km.'),
+                ),
     );
   }
 
   Widget _buildLandmarkListView() {
     return ListView.builder(
-      itemCount: landmarkList.length,
+      itemCount: nearestLandmarks.length,
       itemBuilder: (context, index) {
-        LandmarkData landmarkData = landmarkList[index];
+        LandmarkData landmarkData = nearestLandmarks[index];
 
         List<String> landmarkImages = landmarkData.images
                 ?.map((url) => Constants.baseUrl + '/$url')
@@ -149,12 +144,13 @@ class _AllLandmarksState extends State<AllLandmarks> {
     );
   }
 
-  Future<void> _fetchLandmarks() async {
+  Future<void> fetchNearestLandmarks() async {
     setState(() {
-      isLoading = true; // Set loading state
+      isLoading = true;
     });
 
-    String apiUrl = Constants.baseUrl + "/api/Landmark";
+    String apiUrl =
+        '${Constants.baseUrl}/api/Landmark/getNearestLandmarks/${widget.longitude}/${widget.latitude}';
 
     try {
       var response = await http.get(Uri.parse(apiUrl));
@@ -191,12 +187,12 @@ class _AllLandmarksState extends State<AllLandmarks> {
           }).toList();
 
           setState(() {
-            landmarkList = fetchedLandmarks;
+            nearestLandmarks = fetchedLandmarks;
             isLoading = false; // Set loading state to false after fetching data
           });
 
-          print("Landmark List:");
-          for (var landmark in landmarkList) {
+          print("Nearest Landmark List:");
+          for (var landmark in nearestLandmarks) {
             print("ID: ${landmark.id}");
             print("Name: ${landmark.name}");
             print("Images: ${landmark.images}");
