@@ -714,53 +714,97 @@ class _HomeState extends State<Home> {
       print("Exception: $error");
     }
   }
+  void _showLoadingDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: false, // Prevents dialog from closing when tapping outside
+    builder: (BuildContext context) {
+      return AlertDialog(
+        content: Row(
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(width: 20),
+            Text("Loading..."),
+          ],
+        ),
+      );
+    },
+  );
+}
 void _getCurrentLocation(BuildContext context) async {
-bool serviceEnabled;
-LocationPermission permission;
-// Check if location services are enabled
-serviceEnabled = await Geolocator.isLocationServiceEnabled();
-if (!serviceEnabled) {
-  print('Location services are disabled');
-  return;
-}
+  bool serviceEnabled;
+  LocationPermission permission;
 
-// Request location permission
-permission = await Geolocator.checkPermission();
-if (permission == LocationPermission.deniedForever) {
-  print('Location permissions are permanently denied, we cannot request permissions.');
-  return;
-}
+  // Show loading indicator
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        content: Row(
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(width: 20),
+            Text("Loading..."),
+          ],
+        ),
+      );
+    },
+  );
 
-if (permission == LocationPermission.denied) {
-  permission = await Geolocator.requestPermission();
-  if (permission != LocationPermission.whileInUse && permission != LocationPermission.always) {
-    print('Location permissions are denied (actual value: $permission).');
+  // Check if location services are enabled
+  serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  if (!serviceEnabled) {
+    Navigator.of(context).pop(); // Hide loading indicator
+    print('Location services are disabled');
     return;
   }
+
+  // Request location permission
+  permission = await Geolocator.checkPermission();
+  if (permission == LocationPermission.deniedForever) {
+    Navigator.of(context).pop(); // Hide loading indicator
+    print('Location permissions are permanently denied, we cannot request permissions.');
+    return;
+  }
+
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
+    if (permission != LocationPermission.whileInUse && permission != LocationPermission.always) {
+      Navigator.of(context).pop(); // Hide loading indicator
+      print('Location permissions are denied (actual value: $permission).');
+      return;
+    }
+  }
+
+  // Get current location
+  try {
+    Position position = await Geolocator.getCurrentPosition(
+      forceAndroidLocationManager: true,
+      desiredAccuracy: LocationAccuracy.best,
+    ).timeout(Duration(seconds: 20));
+
+    print(position.latitude);
+    print(position.longitude);
+
+    Navigator.of(context).pop(); // Hide loading indicator
+
+    // Navigate to nearest landmarks page with current location coordinates
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => NearestLandmarksPage(
+          latitude: position.latitude,
+          longitude: position.longitude,
+        ),
+      ),
+    );
+  } catch (e) {
+    Navigator.of(context).pop(); // Hide loading indicator
+    print('Error getting current location: $e');
+  }
+}
 }
 
-// Get current location
-try {
-  Position position = await Geolocator.getCurrentPosition(
-  forceAndroidLocationManager: true,
-  desiredAccuracy: LocationAccuracy.best
-).timeout(Duration(seconds: 20));
-  print(position.latitude);
-  print(position.longitude);
-  // Navigate to nearest landmarks page with current location coordinates
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => NearestLandmarksPage(
-        latitude: position.latitude,
-        longitude: position.longitude,
-      ),
-    ),
-  );
-} catch (e) {
-  print('Error getting current location: $e');
-}
-}
-}
 
 

@@ -110,7 +110,7 @@ class _RegState extends State<Reg> {
               SizedBox(height: 20.0),
               Center(
                 child: Text(
-                  "Register",
+                  "Sign Up",
                   style: TextStyle(fontSize: 22),
                 ),
               ),
@@ -365,7 +365,7 @@ class _RegState extends State<Reg> {
                               ),
                             ),
                             child: Text(
-                              "Register",
+                              "Sign Up",
                               style: TextStyle(
                                 fontSize: 16,
                                 fontStyle: FontStyle.italic,

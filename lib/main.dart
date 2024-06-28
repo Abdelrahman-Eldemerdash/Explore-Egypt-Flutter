@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'login.dart';
+import 'reg.dart';  // Import the SignUp screen
 
 void main() {
   runApp(MaterialApp(
@@ -158,39 +159,78 @@ class _HomeState extends State<Welcome> {
                     ),
                     Padding(
                       padding: EdgeInsets.only(bottom: 50.0),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => Login(),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 130.0, vertical: 15.0),
-                          backgroundColor: Color(0xFF176FF2),
-                        ),
-                        child: Text(
-                          'Explore',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
-                            fontStyle: FontStyle.italic,
-                            fontFamily: 'Montserrat-VariableFont_wght',
-                            shadows: <Shadow>[
-                              Shadow(
-                                offset: Offset(1.0, 1.0),
-                                blurRadius: 25.0,
-                                color: Colors.black.withOpacity(1), // Adjust opacity as needed
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => Login(),  // Navigate to the Login screen
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
                               ),
-                            ],
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 50.0, vertical: 15.0),
+                              backgroundColor: Color(0xFF176FF2),
+                            ),
+                            child: Text(
+                              'Login',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.white,
+                                fontStyle: FontStyle.italic,
+                                fontFamily: 'Montserrat-VariableFont_wght',
+                                shadows: <Shadow>[
+                                  Shadow(
+                                    offset: Offset(1.0, 1.0),
+                                    blurRadius: 25.0,
+                                    color: Colors.black.withOpacity(1), // Adjust opacity as needed
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => Reg(),  // Navigate to the SignUp screen
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 50.0, vertical: 15.0),
+                              backgroundColor: Color(0xFF176FF2),
+                            ),
+                            child: Text(
+                              'Sign Up',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.white,
+                                fontStyle: FontStyle.italic,
+                                fontFamily: 'Montserrat-VariableFont_wght',
+                                shadows: <Shadow>[
+                                  Shadow(
+                                    offset: Offset(1.0, 1.0),
+                                    blurRadius: 25.0,
+                                    color: Colors.black.withOpacity(1), // Adjust opacity as needed
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],

@@ -211,7 +211,7 @@ class _LoginState extends State<Login> {
                         ),
                         children: [
                           TextSpan(
-                            text: "Register",
+                            text: "Sign Up",
                             style: TextStyle(
                               color: Color(0xFF176FF2), // Change register text color here
                               fontSize: 14,

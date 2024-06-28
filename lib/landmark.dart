@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'Landmark_Data.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
+
+import 'Landmark_Data.dart';
 import 'user_data.dart';
 import 'constants.dart';
-import 'package:http/http.dart' as http;
 
 class Landmark extends StatefulWidget {
   final LandmarkData landmarkData;
@@ -24,12 +25,12 @@ class _LandmarkState extends State<Landmark> {
   void initState() {
     _checkFavoriteStatus();
     super.initState();
-     // Initialize favorite status
   }
 
   @override
   Widget build(BuildContext context) {
-    String landmarkDescription = widget.landmarkData.description;
+    String landmarkDescription =
+        _removeHtmlTags(widget.landmarkData.description);
     String landmarkName = widget.landmarkData.name;
     double latitude = widget.landmarkData.latitude;
     double longitude = widget.landmarkData.longitude;
@@ -215,7 +216,9 @@ class _LandmarkState extends State<Landmark> {
                               ),
                             ),
                             Text(
-                              studentPrice == 0 ? 'No Fees' : 'EGP $studentPrice',
+                              studentPrice == 0
+                                  ? 'No Fees'
+                                  : 'EGP $studentPrice',
                               style: TextStyle(
                                 fontSize: 18,
                                 color: Color(0xFF2DD7A4),
@@ -273,7 +276,8 @@ class _LandmarkState extends State<Landmark> {
 
   // Method to check if the landmark is a favorite
   Future<void> _checkFavoriteStatus() async {
-    final url = Uri.parse(Constants.baseUrl + '/api/landmark/isFavourite/${currentUser?.id}/${widget.landmarkData.id}'); 
+    final url = Uri.parse(Constants.baseUrl +
+        '/api/landmark/isFavourite/${currentUser?.id}/${widget.landmarkData.id}');
     try {
       final response = await http.get(url);
 
@@ -295,13 +299,13 @@ class _LandmarkState extends State<Landmark> {
 
   // Method to toggle favorite status
   Future<void> _toggleFavoriteStatus() async {
-    final url = Uri.parse(Constants.baseUrl + '/api/Landmark/toggleFavourite/${currentUser?.id}/${widget.landmarkData.id}');
+    final url = Uri.parse(Constants.baseUrl +
+        '/api/Landmark/toggleFavourite/${currentUser?.id}/${widget.landmarkData.id}');
     final headers = {'Content-Type': 'application/json'};
     try {
       final response = await http.post(url, headers: headers);
 
       if (response.statusCode == 200) {
-        // Assuming the response contains a message indicating the current status
         setState(() {
           isFavorite = !isFavorite;
         });
@@ -322,11 +326,18 @@ class _LandmarkState extends State<Landmark> {
 
   // Method to launch Google Maps
   void _launchMapsUrl(double latitude, double longitude) async {
-    final url = 'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude';
+    final url =
+        'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude';
     if (await canLaunch(url)) {
       await launch(url);
     } else {
       throw 'Could not launch $url';
     }
+  }
+
+  // Utility function to remove HTML tags
+  String _removeHtmlTags(String htmlString) {
+    final regExp = RegExp(r'<[^>]*>', multiLine: true, caseSensitive: true);
+    return htmlString.replaceAll(regExp, '');
   }
 }

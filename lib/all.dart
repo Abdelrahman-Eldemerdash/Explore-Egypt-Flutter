@@ -150,75 +150,83 @@ class _AllLandmarksState extends State<AllLandmarks> {
   }
 
   Future<void> _fetchLandmarks() async {
-    setState(() {
-      isLoading = true; // Set loading state
-    });
+  setState(() {
+    isLoading = true; // Set loading state
+  });
 
-    String apiUrl = Constants.baseUrl + "/api/Landmark";
+  String apiUrl = Constants.baseUrl + "/api/Landmark";
 
-    try {
-      var response = await http.get(Uri.parse(apiUrl));
+  try {
+    var response = await http.get(Uri.parse(apiUrl));
 
-      if (response.statusCode == 200) {
-        Map<String, dynamic> responseData = json.decode(response.body);
+    if (response.statusCode == 200) {
+      Map<String, dynamic> responseData = json.decode(response.body);
 
-        if (responseData.containsKey('data') && responseData['data'] is List) {
-          List<dynamic> landmarkDataList = responseData['data'];
+      if (responseData.containsKey('data') && responseData['data'] is List) {
+        List<dynamic> landmarkDataList = responseData['data'];
 
-          List<LandmarkData> fetchedLandmarks = landmarkDataList.map((data) {
-            List<dynamic> imagesData = data['images'];
-            List<String> imagesUrls = [];
+        List<LandmarkData> fetchedLandmarks = landmarkDataList.map((data) {
+          List<dynamic> imagesData = data['images'];
+          List<String> imagesUrls = [];
 
-            for (var imageData in imagesData) {
-              if (imageData.containsKey('url')) {
-                imagesUrls.add(imageData['url']);
-              }
+          for (var imageData in imagesData) {
+            if (imageData.containsKey('url')) {
+              imagesUrls.add(imageData['url']);
             }
-            return LandmarkData(
-              id: data['id'],
-              name: data['name'],
-              egyptianTicketPrice: data['egyptianTicketPrice'],
-              egyptianStudentTicketPrice: data['egyptianStudentTicketPrice'],
-              foreignTicketPrice: data['foreignTicketPrice'],
-              foreignStudentTicketPrice: data['foreignStudentTicketPrice'],
-              description: data['description'],
-              openTime: data['openTime'],
-              closeTime: data['closeTime'],
-              longitude: data['longitude'],
-              latitude: data['latitude'],
-              images: imagesUrls.isNotEmpty ? imagesUrls : null,
-            );
-          }).toList();
-
-          setState(() {
-            landmarkList = fetchedLandmarks;
-            isLoading = false; // Set loading state to false after fetching data
-          });
-
-          print("Landmark List:");
-          for (var landmark in landmarkList) {
-            print("ID: ${landmark.id}");
-            print("Name: ${landmark.name}");
-            print("Images: ${landmark.images}");
-            print("----------------------");
           }
-        } else {
-          print("Invalid data structure in API response.");
-          setState(() {
-            isLoading = false; // Set loading state to false on error
-          });
+
+          // Strip HTML tags from the description
+          String cleanedDescription = _stripHtmlTags(data['description']);
+
+          return LandmarkData(
+            id: data['id'],
+            name: data['name'],
+            egyptianTicketPrice: data['egyptianTicketPrice'],
+            egyptianStudentTicketPrice: data['egyptianStudentTicketPrice'],
+            foreignTicketPrice: data['foreignTicketPrice'],
+            foreignStudentTicketPrice: data['foreignStudentTicketPrice'],
+            description: cleanedDescription,
+            openTime: data['openTime'],
+            closeTime: data['closeTime'],
+            longitude: data['longitude'],
+            latitude: data['latitude'],
+            images: imagesUrls.isNotEmpty ? imagesUrls : null,
+          );
+        }).toList();
+
+        setState(() {
+          landmarkList = fetchedLandmarks;
+          isLoading = false; // Set loading state to false after fetching data
+        });
+
+        print("Landmark List:");
+        for (var landmark in landmarkList) {
+          print("ID: ${landmark.id}");
+          print("Name: ${landmark.name}");
+          print("Images: ${landmark.images}");
+          print("----------------------");
         }
       } else {
-        print("Error: ${response.statusCode}");
+        print("Invalid data structure in API response.");
         setState(() {
           isLoading = false; // Set loading state to false on error
         });
       }
-    } catch (error) {
-      print("Exception: $error");
+    } else {
+      print("Error: ${response.statusCode}");
       setState(() {
-        isLoading = false; // Set loading state to false on exception
+        isLoading = false; // Set loading state to false on error
       });
     }
+  } catch (error) {
+    print("Exception: $error");
+    setState(() {
+      isLoading = false; // Set loading state to false on exception
+    });
   }
+}
+String _stripHtmlTags(String htmlString) {
+  // Remove specific <p> and </p> tags
+  return htmlString.replaceAll(RegExp(r'<\/?p>'), '');
+}
 }
